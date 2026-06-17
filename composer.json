@@ -1,0 +1,11 @@
+{
+    "name": "secretariat/ifp-3ia",
+    "description": "Secrétariat IFP-3IA",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "phpoffice/phpword": "^1.4",
+        "mpdf/mpdf": "^8.3",
+        "dompdf/dompdf": "^3.1"
+    }
+}

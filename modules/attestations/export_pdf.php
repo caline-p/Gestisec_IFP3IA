@@ -97,8 +97,8 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .frame { position:absolute; top:15mm; left:15mm; width:267mm; height:180mm; }
     .frame-line  { position:absolute; top:15mm; left:15mm; width:267mm; height:180mm; border:1.2px solid #1a2e6b; }
     .frame-line2 { position:absolute; top:18mm; left:18mm; width:261mm; height:174mm; border:1px solid #1a2e6b; }
-    .watermark { position:absolute; top:42mm; left:0; width:297mm; text-align:center; white-space:nowrap;
-                 font-size:135pt; font-weight:bold; color:#1a2e6b; opacity:0.07;
+    .watermark { position:absolute; top:60mm; left:0; width:297mm; text-align:center; white-space:nowrap;
+                 font-size:175pt; font-weight:bold; color:#1a2e6b; opacity:0.07;
                  letter-spacing:4pt; transform:rotate(-20deg); }
     .vbox { position:absolute; top:20mm; left:34mm; width:229mm; height:168mm; border-collapse:collapse; }
     .vcell { height:168mm; vertical-align:middle; }

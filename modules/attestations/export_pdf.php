@@ -94,12 +94,12 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     @page { margin:0; }
     body { font-family: Georgia, serif; color:#1a2e6b; }
     .page { position:relative; width:297mm; height:210mm; overflow:hidden; }
-    .frame { position:absolute; top:0; left:0; width:297mm; height:210mm; }
+    .frame { position:absolute; top:15mm; left:15mm; width:267mm; height:180mm; }
     .watermark { position:absolute; top:55mm; left:0; width:297mm; text-align:center;
                  font-size:80pt; font-weight:bold; color:#1a2e6b; opacity:0.06;
                  letter-spacing:4pt; transform:rotate(-20deg); }
-    .vbox { position:absolute; top:14mm; left:32mm; width:233mm; height:182mm; border-collapse:collapse; }
-    .vcell { height:182mm; vertical-align:middle; }
+    .vbox { position:absolute; top:22mm; left:34mm; width:229mm; height:166mm; border-collapse:collapse; }
+    .vcell { height:166mm; vertical-align:middle; }
     .header-table { width:100%; border-collapse:collapse; }
     .header-table td { vertical-align:middle; }
     .sep { border:none; border-top:2px solid #1a2e6b; margin:2mm 0; }

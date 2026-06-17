@@ -108,10 +108,9 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .cert-body { text-align:center; color:#1a2e6b; }
     .footer-table { width:130mm; margin:0 auto; border-collapse:collapse; }
     .footer-table td { vertical-align:bottom; }
-    .fait { font-size:10pt; margin-bottom:13mm; white-space:nowrap; }
+    .fait { font-size:10pt; margin-bottom:7mm; white-space:nowrap; position:relative; top:7mm; }
     .fill { display:inline-block; width:20mm; border-bottom:1px solid #1a2e6b; }
     .sig { font-size:13pt; font-style:italic; }
-    .sig-line { display:inline-block; width:45mm; border-bottom:1px solid #1a2e6b; margin-top:2mm; }
     .ico { width:6mm; height:auto; vertical-align:middle; margin-right:3px; }
     ";
 
@@ -160,7 +159,6 @@ function buildAttestationHtml(string $category, array $d, array $img): string
             <td style='width:44%; text-align:right;'>
               <div class='fait'>Fait &agrave; Dschang, le <span class='fill'></span></div>
               <div class='sig'>Signature</div>
-              <div class='sig-line'></div>
             </td>
           </tr>
         </table>";
@@ -214,7 +212,6 @@ function buildAttestationHtml(string $category, array $d, array $img): string
             <td style='width:44%; text-align:right;'>
               <div class='fait'>Fait &agrave; Dschang, le <span class='fill'></span></div>
               <div class='sig'>Signature</div>
-              <div class='sig-line'></div>
             </td>
           </tr>
         </table>";

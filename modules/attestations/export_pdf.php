@@ -145,8 +145,6 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           Nous soussignons, IFP-3IA, certifions par la pr&eacute;sente que <b>$nom</b>, n&eacute; le
           <b>$dNais</b> &agrave; <b>$birthPlace</b>, a suivie r&eacute;guli&egrave;rement une formation
           professionnelle au sein de notre institut du <b>$dDebut</b> au <b>$dFin</b> en <b>$specialty</b>.
-          L'int&eacute;ress&eacute; a achev&eacute; la formation et &agrave; composer un examen de Certificat
-          de Qualification Professionnel (CQP) dont les r&eacute;sultats sont en attente de publication.
         </div>
         <div class='cert-body' style='margin-top:5mm;'>
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.

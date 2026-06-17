@@ -108,9 +108,10 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .cert-body { text-align:center; color:#1a2e6b; }
     .footer-table { width:130mm; margin:0 auto; border-collapse:collapse; }
     .footer-table td { vertical-align:bottom; }
-    .fait { font-size:11pt; margin-bottom:11mm; }
-    .sig { font-size:13pt; font-style:italic; display:inline-block;
-           border-top:1px solid #1a2e6b; padding-top:1.5mm; min-width:42mm; text-align:center; }
+    .fait { font-size:10pt; margin-bottom:13mm; white-space:nowrap; }
+    .fill { display:inline-block; width:20mm; border-bottom:1px solid #1a2e6b; }
+    .sig { font-size:13pt; font-style:italic; }
+    .sig-line { display:inline-block; width:45mm; border-bottom:1px solid #1a2e6b; margin-top:2mm; }
     .ico { width:6mm; height:auto; vertical-align:middle; margin-right:3px; }
     ";
 
@@ -130,7 +131,7 @@ function buildAttestationHtml(string $category, array $d, array $img): string
                       letter-spacing:1pt; border-top:2px solid #1a2e6b; border-bottom:2px solid #1a2e6b;
                       padding:3mm 0; margin:2mm 0 5mm; }
         .cert-body { font-size:14pt; line-height:1.9; }
-        .qr { width:20mm; height:auto; }
+        .qr { width:20mm; height:auto; position:relative; top:7mm; }
         .phone-line { font-size:10pt; font-weight:bold; }
         ";
         $body = "
@@ -152,13 +153,14 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         $footer = "
         <table class='footer-table'>
           <tr>
-            <td style='width:40%'>
+            <td style='width:34%'>
               <div class='phone-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
             </td>
-            <td style='width:24%; text-align:center;'><img class='qr' src='{$img['qr']}' alt='QR'></td>
-            <td style='width:36%; text-align:right;'>
-              <div class='fait'>Fait &agrave; Dschang, le _______________</div>
+            <td style='width:22%; text-align:center;'><img class='qr' src='{$img['qr']}' alt='QR'></td>
+            <td style='width:44%; text-align:right;'>
+              <div class='fait'>Fait &agrave; Dschang, le <span class='fill'></span></div>
               <div class='sig'>Signature</div>
+              <div class='sig-line'></div>
             </td>
           </tr>
         </table>";
@@ -204,14 +206,15 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         $footer = "
         <table class='footer-table' style='margin-top:30mm;'>
           <tr>
-            <td style='width:40%'>
+            <td style='width:36%'>
               <div class='contact-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
               <div class='contact-line'><img class='ico' src='{$img['loc']}' alt='Loc'> DSCHANG, MARCHE FOTO</div>
             </td>
-            <td style='width:26%; text-align:center;'><div class='website'>WWW.SIR-TECH.ORG</div></td>
-            <td style='width:34%; text-align:right;'>
-              <div class='fait'>Fait &agrave; Dschang, le _______________</div>
+            <td style='width:20%; text-align:center;'><div class='website'>WWW.SIR-TECH.ORG</div></td>
+            <td style='width:44%; text-align:right;'>
+              <div class='fait'>Fait &agrave; Dschang, le <span class='fill'></span></div>
               <div class='sig'>Signature</div>
+              <div class='sig-line'></div>
             </td>
           </tr>
         </table>";

@@ -70,14 +70,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div style="max-width:900px">
 <div class="card">
   <div class="card-header">
-    <h2>Modifier Attestation</h2>
+    <h2 class="card-title">Modifier Attestation</h2>
   </div>
   <div class="card-body">
     <?php if (!empty($errors)): ?>
-    <div style="background:#fce8e8;color:#c00;font-size:13px;padding:12px 16px;border-radius:7px;border-left:3px solid #c00;margin-bottom:16px">
-      <strong>Erreurs :</strong>
+    <div class="flash flash-error" style="display:block">
+      <strong>Veuillez corriger les erreurs suivantes :</strong>
       <?php foreach ($errors as $err): ?>
-      <div>• <?= clean($err) ?></div>
+      <div>&bull; <?= clean($err) ?></div>
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
 
-      <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
+      <div style="margin-top:24px;display:flex;gap:8px;justify-content:flex-end">
         <a href="index.php" class="btn btn-outline">Annuler</a>
         <button type="submit" class="btn btn-primary">Mettre à jour</button>
       </div>

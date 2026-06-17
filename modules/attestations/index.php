@@ -20,7 +20,6 @@ $offset  = ($page - 1) * $perPage;
 $tabConfig = [
     'apprenants' => [
         'label'      => 'Apprenants inscrits',
-        'icon'       => '🎓',
         'color'      => 'var(--blue)',
         'where'      => "am.category = 'etudiant'",
         'sql_select' => "ap.matricule, f.nom AS filiere_nom",
@@ -32,7 +31,6 @@ $tabConfig = [
     ],
     'sirtech' => [
         'label'      => 'Stagiaires Sir-Tech',
-        'icon'       => '🏢',
         'color'      => '#16a34a',
         'where'      => "am.category = 'stagiaire_externe'",
         'sql_select' => "se.etablissement, se.type AS stagiaire_type",
@@ -43,7 +41,6 @@ $tabConfig = [
     ],
     'stagiaires' => [
         'label'      => 'Stagiaires externes',
-        'icon'       => '👤',
         'color'      => '#e67e22',
         'where'      => "am.category IN ('stagiaire_academique','stagiaire_professionnel')",
         'sql_select' => "se.etablissement, se.type AS stagiaire_type",
@@ -96,19 +93,13 @@ foreach ($tabConfig as $key => $c) {
 ?>
 
 <!-- ── Onglets ─────────────────────────────────────────────────────────── -->
-<div style="display:flex;gap:0;border-bottom:2px solid var(--gray-light);margin-bottom:20px">
+<?php $tabClass = ['apprenants' => '', 'sirtech' => 'green', 'stagiaires' => 'orange']; ?>
+<div class="tabs">
   <?php foreach ($tabConfig as $key => $c): ?>
     <a href="?tab=<?= $key ?>"
-       style="padding:10px 22px;font-size:13px;font-weight:600;text-decoration:none;
-              border-bottom: <?= $tab===$key ? "2px solid {$c['color']}" : '2px solid transparent' ?>;
-              color: <?= $tab===$key ? $c['color'] : 'var(--gray-mid)' ?>;
-              margin-bottom:-2px">
-      <?= $c['icon'] ?> <?= clean($c['label']) ?>
-      <span style="background:<?= $tab===$key ? $c['color'] : 'var(--gray-light)' ?>;
-                   color:<?= $tab===$key ? '#fff' : 'var(--gray-mid)' ?>;
-                   font-size:10px;padding:1px 7px;border-radius:10px;margin-left:6px">
-        <?= $counts[$key] ?>
-      </span>
+       class="tab <?= $tab===$key ? 'active '.$tabClass[$key] : '' ?>">
+      <?= clean($c['label']) ?>
+      <span class="tab-count"><?= $counts[$key] ?></span>
     </a>
   <?php endforeach; ?>
 </div>
@@ -134,8 +125,8 @@ foreach ($tabConfig as $key => $c) {
 <!-- ── Tableau ──────────────────────────────────────────────────────────── -->
 <div class="card">
   <div class="card-header">
-    <h2>
-      <?= $cfg['icon'] ?> <?= clean($cfg['label']) ?>
+    <h2 class="card-title">
+      <?= clean($cfg['label']) ?>
       <span style="font-weight:400;color:var(--gray-mid);font-size:12px">
         (<?= $total ?> enregistrement<?= $total>1?'s':'' ?>)
       </span>
@@ -177,16 +168,13 @@ foreach ($tabConfig as $key => $c) {
           <td>
             <?php
               $typeLabel = match($att['category'] ?? '') {
-                  'stagiaire_externe'     => ['label' => 'Sir-Tech',          'bg' => '#d1fae5', 'color' => '#065f46'],
-                  'stagiaire_academique'  => ['label' => 'Académique',        'bg' => '#eaf3fb', 'color' => '#2980b9'],
-                  'stagiaire_professionnel' => ['label' => 'Professionnel',  'bg' => '#fef5e7', 'color' => '#e67e22'],
-                  default                 => ['label' => '—',                 'bg' => '#f4f4f4', 'color' => '#888'],
+                  'stagiaire_externe'       => ['label' => 'Sir-Tech',      'class' => 'badge-green'],
+                  'stagiaire_academique'    => ['label' => 'Académique',    'class' => 'badge-blue'],
+                  'stagiaire_professionnel' => ['label' => 'Professionnel', 'class' => 'badge-orange'],
+                  default                   => ['label' => '—',             'class' => 'badge-gray'],
               };
             ?>
-            <span style="background:<?= $typeLabel['bg'] ?>;color:<?= $typeLabel['color'] ?>;
-                         font-size:10px;padding:2px 8px;border-radius:8px;font-weight:600">
-              <?= $typeLabel['label'] ?>
-            </span>
+            <span class="badge <?= $typeLabel['class'] ?>"><?= $typeLabel['label'] ?></span>
           </td>
         <?php endif; ?>
 

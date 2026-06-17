@@ -98,7 +98,8 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .watermark { position:absolute; top:55mm; left:0; width:297mm; text-align:center;
                  font-size:80pt; font-weight:bold; color:#1a2e6b; opacity:0.06;
                  letter-spacing:4pt; transform:rotate(-20deg); }
-    .content { position:absolute; top:24mm; left:32mm; width:233mm; }
+    .vbox { position:absolute; top:14mm; left:32mm; width:233mm; height:182mm; border-collapse:collapse; }
+    .vcell { height:182mm; vertical-align:middle; }
     .header-table { width:100%; border-collapse:collapse; }
     .header-table td { vertical-align:middle; }
     .sep { border:none; border-top:2px solid #1a2e6b; margin:2mm 0; }
@@ -145,10 +146,11 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           L'int&eacute;ress&eacute; a achev&eacute; la formation et &agrave; composer un examen de Certificat
           de Qualification Professionnel (CQP) dont les r&eacute;sultats sont en attente de publication.
         </div>
-        <div class='cert-body' style='margin-top:3mm;'>
+        <div class='cert-body' style='margin-top:5mm;'>
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
-        </div>
-        <table class='footer-table' style='margin-top:8mm;'>
+        </div>";
+        $footer = "
+        <table class='footer-table'>
           <tr>
             <td style='width:40%'>
               <div class='phone-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
@@ -195,10 +197,11 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           <b>$dNais</b> &agrave; <b>$birthPlace</b>, $phrase du <b>$dDebut</b> au <b>$dFin</b> en
           <span class='spec'>$specialty</span>
         </div>
-        <div class='cert-body' style='font-style:normal; margin-top:3mm;'>
+        <div class='cert-body' style='font-style:normal; margin-top:5mm;'>
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
-        </div>
-        <table class='footer-table' style='margin-top:8mm;'>
+        </div>";
+        $footer = "
+        <table class='footer-table'>
           <tr>
             <td style='width:42%'>
               <div class='contact-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
@@ -217,7 +220,7 @@ function buildAttestationHtml(string $category, array $d, array $img): string
       <div class='page'>
         <img class='frame' src='{$img['frame']}'>
         <div class='watermark'>$watermark</div>
-        <div class='content'>$body</div>
+        <table class='vbox'><tr><td class='vcell'>$body $footer</td></tr></table>
       </div>
     </body></html>";
 }

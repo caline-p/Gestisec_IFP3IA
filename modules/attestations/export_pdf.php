@@ -98,13 +98,13 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .watermark { position:absolute; top:55mm; left:0; width:297mm; text-align:center;
                  font-size:80pt; font-weight:bold; color:#1a2e6b; opacity:0.06;
                  letter-spacing:4pt; transform:rotate(-20deg); }
-    .vbox { position:absolute; top:22mm; left:34mm; width:229mm; height:166mm; border-collapse:collapse; }
-    .vcell { height:166mm; vertical-align:middle; }
+    .vbox { position:absolute; top:20mm; left:34mm; width:229mm; height:168mm; border-collapse:collapse; }
+    .vcell { height:168mm; vertical-align:middle; }
     .header-table { width:100%; border-collapse:collapse; }
     .header-table td { vertical-align:middle; }
     .sep { border:none; border-top:2px solid #1a2e6b; margin:2mm 0; }
     .cert-body { text-align:center; color:#1a2e6b; }
-    .footer-table { width:100%; border-collapse:collapse; }
+    .footer-table { width:130mm; margin:0 auto; border-collapse:collapse; }
     .footer-table td { vertical-align:bottom; }
     .fait { font-size:11pt; margin-bottom:11mm; }
     .sig { font-size:13pt; font-style:italic; display:inline-block;
@@ -182,7 +182,8 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         .cert-body { font-size:14pt; line-height:1.9; font-style:italic; }
         .spec { font-size:13pt; font-weight:bold; }
         .contact-line { font-size:9.5pt; font-weight:bold; margin-bottom:2mm; }
-        .website { font-size:9pt; font-weight:bold; text-align:center; }
+        .website { font-size:8pt; font-weight:bold; text-align:center; white-space:nowrap; }
+        .vcell { vertical-align:top; padding-top:10mm; }
         ";
         $body = "
         <div class='logo-head'>
@@ -201,14 +202,14 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
         </div>";
         $footer = "
-        <table class='footer-table'>
+        <table class='footer-table' style='margin-top:30mm;'>
           <tr>
-            <td style='width:42%'>
+            <td style='width:40%'>
               <div class='contact-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
               <div class='contact-line'><img class='ico' src='{$img['loc']}' alt='Loc'> DSCHANG, MARCHE FOTO</div>
             </td>
-            <td style='width:22%; text-align:center;'><div class='website'>WWW.SIR-TECH.ORG</div></td>
-            <td style='width:36%; text-align:right;'>
+            <td style='width:26%; text-align:center;'><div class='website'>WWW.SIR-TECH.ORG</div></td>
+            <td style='width:34%; text-align:right;'>
               <div class='fait'>Fait &agrave; Dschang, le _______________</div>
               <div class='sig'>Signature</div>
             </td>

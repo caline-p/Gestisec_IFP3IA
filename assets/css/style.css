@@ -9,6 +9,7 @@
   /* Palette principale */
   --blue-dark:   #1B3A6B;   /* bleu institutionnel profond */
   --blue-mid:    #2E6DB4;   /* bleu interactif */
+  --blue:        #2E6DB4;   /* alias bleu interactif */
   --blue-accent: #0078D4;   /* bleu clair accent/hover */
   --blue-light:  #D0E4F7;
   --blue-pale:   #EBF3FB;
@@ -307,6 +308,11 @@ tbody tr:nth-child(even):hover { background: var(--blue-pale); }
 .btn-success:hover { background: #166534; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-xs { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
+.btn-icon {
+  padding: 0; width: 32px; height: 32px;
+  justify-content: center; flex-shrink: 0;
+}
+.btn-icon.btn-sm { width: 30px; height: 30px; }
 
 /* ── FORMS ─────────────────────────────────────────────────── */
 .form-group { margin-bottom: 18px; }
@@ -330,6 +336,40 @@ tbody tr:nth-child(even):hover { background: var(--blue-pale); }
 .form-control::placeholder { color: var(--gray-mid); }
 textarea.form-control { resize: vertical; min-height: 90px; }
 select.form-control { cursor: pointer; }
+
+/* Champ simple (libellé + contrôle) */
+.field { margin-bottom: 16px; }
+.field > label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--blue-dark); margin-bottom: 6px; letter-spacing: .02em;
+}
+
+/* ── ONGLETS (tabs) ────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 2px;
+  border-bottom: 2px solid var(--gray-light);
+  margin-bottom: 22px;
+}
+.tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 20px; font-size: 13px; font-weight: 600;
+  color: var(--gray-mid); background: none; border: none;
+  border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+  cursor: pointer; transition: color .15s, border-color .15s;
+  text-decoration: none; white-space: nowrap;
+}
+.tab:hover { color: var(--blue-dark); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.tab.active.green  { color: var(--green);  border-bottom-color: var(--green); }
+.tab.active.orange { color: var(--orange); border-bottom-color: var(--orange); }
+.tab .tab-count {
+  font-size: 10px; font-weight: 700; line-height: 1;
+  padding: 2px 7px; border-radius: 10px;
+  background: var(--gray-light); color: var(--gray-mid);
+}
+.tab.active .tab-count { background: var(--blue); color: #fff; }
+.tab.active.green  .tab-count { background: var(--green);  color: #fff; }
+.tab.active.orange .tab-count { background: var(--orange); color: #fff; }
 
 /* ── SEARCH BAR ────────────────────────────────────────────── */
 .search-bar {

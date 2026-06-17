@@ -202,77 +202,52 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <style>
-.tab-btn {
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  color: var(--gray-mid);
-  transition: color .15s, border-color .15s;
-}
-.tab-btn.active-apprenant { color: var(--blue);  border-color: var(--blue); }
-.tab-btn.active-sirtech   { color: #16a34a;     border-color: #16a34a; }
-.tab-btn.active-stagiaire { color: #e67e22;     border-color: #e67e22; }
 .form-panel { display: none; }
 .form-panel.active { display: block; }
 .preview-box {
-  background: #f0f6ff;
-  border: 1px solid #c5daef;
-  border-radius: 8px;
+  background: var(--blue-pale);
+  border: 1px solid var(--blue-light);
+  border-radius: var(--radius);
   padding: 14px 18px;
   margin-bottom: 20px;
 }
-.preview-box.sirtech {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
+.preview-box.sirtech { background: #F0FDF4; border-color: #BBF7D0; }
 .preview-box .preview-title {
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--blue);
+  font-size: 12px; font-weight: 700; margin-bottom: 8px; color: var(--blue);
 }
-.preview-box.sirtech .preview-title { color: #16a34a; }
+.preview-box.sirtech .preview-title { color: var(--green); }
 </style>
 
 <div style="max-width:860px">
 
   <!-- ── En-tête ──────────────────────────────────────────────────────── -->
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-    <a href="index.php?tab=<?= $tab ?>" class="btn btn-outline btn-sm">← Retour</a>
-    <h2 style="margin:0;font-size:18px">Nouvelle Attestation</h2>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+    <a href="index.php?tab=<?= $tab ?>" class="btn btn-outline btn-sm">&larr; Retour</a>
+    <h2 class="page-title" style="margin:0">Nouvelle Attestation</h2>
   </div>
 
   <!-- ── Onglets ──────────────────────────────────────────────────────── -->
-  <div style="border-bottom:2px solid var(--gray-light);margin-bottom:24px;display:flex;gap:4px">
-    <button type="button" class="tab-btn <?= $tab==='apprenants'?'active-apprenant':'' ?>"
+  <div class="tabs">
+    <button type="button" class="tab <?= $tab==='apprenants'?'active':'' ?>"
             id="btn-apprenant" onclick="switchTab('apprenants')">
-      🎓 Apprenant IFP-3IA
+      Apprenant IFP-3IA
     </button>
-    <button type="button" class="tab-btn <?= $tab==='sirtech'?'active-sirtech':'' ?>"
+    <button type="button" class="tab <?= $tab==='sirtech'?'active green':'' ?>"
             id="btn-sirtech" onclick="switchTab('sirtech')">
-      🏢 Formation Sir-Tech
+      Stagiaire Sir-Tech
     </button>
-    <button type="button" class="tab-btn <?= $tab==='stagiaires'?'active-stagiaire':'' ?>"
+    <button type="button" class="tab <?= $tab==='stagiaires'?'active orange':'' ?>"
             id="btn-stagiaire" onclick="switchTab('stagiaires')">
-      👤 Stagiaire externe
-    </button>
-    <button type="button" class="tab-btn <?= $tab==='stagiaires'?'active-stagiaire':'' ?>"
-            id="btn-stagiaire" onclick="switchTab('stagiaires')">
-      📋 Stage Sir-Tech
+      Stagiaire externe
     </button>
   </div>
 
   <!-- ── Erreurs ──────────────────────────────────────────────────────── -->
   <?php if (!empty($errors)): ?>
-  <div style="background:#fce8e8;color:#c00;font-size:13px;padding:12px 16px;border-radius:7px;border-left:3px solid #c00;margin-bottom:20px">
-    <strong>Erreurs :</strong>
+  <div class="flash flash-error" style="display:block">
+    <strong>Veuillez corriger les erreurs suivantes :</strong>
     <?php foreach ($errors as $err): ?>
-      <div>• <?= clean($err) ?></div>
+      <div>&bull; <?= clean($err) ?></div>
     <?php endforeach; ?>
   </div>
   <?php endif; ?>
@@ -284,8 +259,8 @@ require_once __DIR__ . '/../../includes/header.php';
   <div class="form-panel <?= $tab==='apprenants'?'active':'' ?>" id="panel-apprenants">
     <div class="card">
       <div class="card-header" style="border-left:4px solid var(--blue)">
-        <h3 style="margin:0;font-size:15px;color:var(--blue)">
-          🎓 Attestation pour un apprenant IFP-3IA
+        <h3 class="card-title" style="margin:0">
+          Attestation pour un apprenant IFP-3IA
         </h3>
         <small style="color:var(--gray-mid)">
           Fin de formation — données récupérées depuis la fiche apprenant.
@@ -296,9 +271,9 @@ require_once __DIR__ . '/../../includes/header.php';
           <input type="hidden" name="form_tab" value="apprenants">
 
           <div class="field" style="margin-bottom:20px">
-            <label style="font-weight:700">Sélectionner l'apprenant *</label>
+            <label>Sélectionner l'apprenant *</label>
             <select name="apprenant_id" id="apprenant-select" class="form-control"
-                    style="font-size:13px" onchange="fillApprenantData(this)">
+                    onchange="fillApprenantData(this)">
               <option value="">— Choisir un apprenant inscrit —</option>
               <?php foreach ($apprenants as $a): ?>
               <option value="<?= $a['id'] ?>"
@@ -313,19 +288,10 @@ require_once __DIR__ . '/../../includes/header.php';
               </option>
               <?php endforeach; ?>
             </select>
-            <select name="sirtech_type">
-                <option value="formation_sirtech">
-                    Formation Sir-Tech
-                </option>
-
-                <option value="stage_sirtech">
-                    Stage Sir-Tech
-                </option>
-            </select>
           </div>
 
           <div id="apprenant-preview" class="preview-box" style="display:none">
-            <div class="preview-title">📋 Données récupérées automatiquement</div>
+            <div class="preview-title">Données récupérées automatiquement</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
               <div><span style="color:var(--gray-mid)">Nom complet :</span><br>
                    <strong id="prev-nom">—</strong></div>
@@ -374,9 +340,9 @@ require_once __DIR__ . '/../../includes/header.php';
   ═════════════════════════════════════════════════════════════════════════ -->
   <div class="form-panel <?= $tab==='sirtech'?'active':'' ?>" id="panel-sirtech">
     <div class="card">
-      <div class="card-header" style="border-left:4px solid #16a34a">
-        <h3 style="margin:0;font-size:15px;color:#16a34a">
-          🏢 Attestation pour un stagiaire Sir-Tech
+      <div class="card-header" style="border-left:4px solid var(--green)">
+        <h3 class="card-title" style="margin:0;color:var(--green)">
+          Attestation pour un stagiaire Sir-Tech
         </h3>
         <small style="color:var(--gray-mid)">
           Délivrée par Sir-Tech — sélectionnez un stagiaire déjà enregistré.
@@ -387,9 +353,9 @@ require_once __DIR__ . '/../../includes/header.php';
           <input type="hidden" name="form_tab" value="sirtech">
 
           <?php if (empty($stagiairesSirTech)): ?>
-            <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#92400e;font-size:13px">
-              ⚠️ Aucun stagiaire Sir-Tech n'est encore enregistré. Ajoutez-en un d'abord dans le module
-              <a href="../stagiaires/create.php">Stagiaires</a>.
+            <div class="flash flash-info" style="display:block;margin-bottom:16px">
+              Aucun stagiaire Sir-Tech n'est encore enregistré. Ajoutez-en un d'abord dans le module
+              <a href="../stagiaires/create.php" style="text-decoration:underline">Stagiaires</a>.
             </div>
           <?php endif; ?>
 
@@ -408,9 +374,9 @@ require_once __DIR__ . '/../../includes/header.php';
                     </option>
                 </select>
             </div>
-            <label style="font-weight:700">Sélectionner le stagiaire Sir-Tech *</label>
+            <label>Sélectionner le stagiaire Sir-Tech *</label>
             <select name="stagiaire_externe_id" id="sirtech-select" class="form-control"
-                    style="font-size:13px" onchange="fillSirtechData(this)">
+                    onchange="fillSirtechData(this)">
               <option value="">— Choisir un stagiaire Sir-Tech —</option>
               <?php foreach ($stagiairesSirTech as $s): ?>
               <option value="<?= $s['id'] ?>"
@@ -430,7 +396,7 @@ require_once __DIR__ . '/../../includes/header.php';
           </div>
 
           <div id="sirtech-preview" class="preview-box sirtech" style="display:none">
-            <div class="preview-title">📋 Données récupérées depuis la fiche stagiaire</div>
+            <div class="preview-title">Données récupérées depuis la fiche stagiaire</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
               <div><span style="color:var(--gray-mid)">Nom complet :</span><br>
                    <strong id="sprev-nom">—</strong></div>
@@ -466,8 +432,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <a href="index.php?tab=sirtech" class="btn btn-outline">Annuler</a>
-            <button type="submit" class="btn btn-primary"
-                    style="background:#16a34a;border-color:#16a34a"
+            <button type="submit" class="btn btn-success"
                     <?= empty($stagiairesSirTech) ? 'disabled' : '' ?>>
               Créer l'attestation Sir-Tech
             </button>
@@ -483,9 +448,9 @@ require_once __DIR__ . '/../../includes/header.php';
   ═════════════════════════════════════════════════════════════════════════ -->
   <div class="form-panel <?= $tab==='stagiaires'?'active':'' ?>" id="panel-stagiaires">
     <div class="card">
-      <div class="card-header" style="border-left:4px solid #e67e22">
-        <h3 style="margin:0;font-size:15px;color:#e67e22">
-          👤 Attestation pour un stagiaire externe
+      <div class="card-header" style="border-left:4px solid var(--orange)">
+        <h3 class="card-title" style="margin:0;color:var(--orange)">
+          Attestation pour un stagiaire externe
         </h3>
         <small style="color:var(--gray-mid)">
           IFP-3IA délivre l'attestation — pour stagiaires académiques ou professionnels.
@@ -496,22 +461,18 @@ require_once __DIR__ . '/../../includes/header.php';
           <input type="hidden" name="form_tab" value="stagiaires">
 
           <div class="field" style="margin-bottom:16px">
-            <label style="font-weight:700">Type de stage *</label>
+            <label>Type de stage *</label>
             <div style="display:flex;gap:16px;margin-top:8px">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400">
                 <input type="radio" name="ext_type" value="academique"
                        <?= ($_POST['ext_type']??'academique')==='academique'?'checked':'' ?>>
-                <span style="background:#eaf3fb;color:#2980b9;padding:3px 12px;border-radius:20px;font-weight:600">
-                  📚 Académique
-                </span>
+                <span class="badge badge-blue">Académique</span>
                 <span style="color:var(--gray-mid);font-size:11px">(lycée, université, école...)</span>
               </label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:400">
                 <input type="radio" name="ext_type" value="professionnel"
                        <?= ($_POST['ext_type']??'')==='professionnel'?'checked':'' ?>>
-                <span style="background:#fef5e7;color:#e67e22;padding:3px 12px;border-radius:20px;font-weight:600">
-                  💼 Professionnel
-                </span>
+                <span class="badge badge-orange">Professionnel</span>
                 <span style="color:var(--gray-mid);font-size:11px">(entreprise, organisation...)</span>
               </label>
             </div>
@@ -581,7 +542,7 @@ require_once __DIR__ . '/../../includes/header.php';
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <a href="index.php?tab=stagiaires" class="btn btn-outline">Annuler</a>
             <button type="submit" class="btn btn-primary"
-                    style="background:#e67e22;border-color:#e67e22">
+                    style="background:var(--orange);box-shadow:none">
               Créer l'attestation
             </button>
           </div>
@@ -598,9 +559,16 @@ function switchTab(tab) {
   ['apprenants', 'sirtech', 'stagiaires'].forEach(t => {
     document.getElementById('panel-' + t).classList.toggle('active', t === tab);
   });
-  document.getElementById('btn-apprenant').classList.toggle('active-apprenant', tab === 'apprenants');
-  document.getElementById('btn-sirtech').classList.toggle('active-sirtech',     tab === 'sirtech');
-  document.getElementById('btn-stagiaire').classList.toggle('active-stagiaire', tab === 'stagiaires');
+  setTabState('btn-apprenant', tab === 'apprenants', null);
+  setTabState('btn-sirtech',   tab === 'sirtech',    'green');
+  setTabState('btn-stagiaire', tab === 'stagiaires', 'orange');
+}
+
+function setTabState(id, isActive, colorClass) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('active', isActive);
+  if (colorClass) el.classList.toggle(colorClass, isActive);
 }
 
 // ── Prévisualisation Apprenant IFP-3IA ──────────────────────────────────────

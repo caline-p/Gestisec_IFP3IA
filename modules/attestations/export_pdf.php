@@ -22,28 +22,9 @@ if (!$id) { http_response_code(404); exit('Attestation introuvable.'); }
 
 // ── 1. Récupération ──────────────────────────────────────────
 $stmt = $db->prepare(
-    "SELECT att.*,
-            am.category,
-            am.apprenant_id,
-            am.stagiaire_externe_id,
-            ap.matricule       AS apprenant_matricule,
-            ap.nom             AS apprenant_nom,
-            ap.prenom          AS apprenant_prenom,
-            ap.date_naissance  AS apprenant_ddn,
-            ap.lieu_naissance  AS apprenant_ldn,
-            f.nom              AS filiere_nom,
-            se.nom             AS stag_nom,
-            se.prenom          AS stag_prenom,
-            se.etablissement   AS stag_etablissement,
-            se.specialty       AS stag_specialty,
-            se.start_date      AS stag_start,
-            se.end_date        AS stag_end,
-            se.type            AS stagiaire_type
+    "SELECT att.*, am.category
      FROM attestation att
      LEFT JOIN attestation_meta am ON am.attestation_id = att.id
-     LEFT JOIN apprenants ap       ON ap.id = am.apprenant_id
-     LEFT JOIN filieres f          ON f.id  = ap.filiere_id
-     LEFT JOIN stagiaires_externes se ON se.id = am.stagiaire_externe_id
      WHERE att.id = ?"
 );
 $stmt->execute([$id]);
@@ -51,26 +32,18 @@ $att = $stmt->fetch();
 if (!$att) { http_response_code(404); exit('Attestation introuvable (id='.$id.').'); }
 
 $category = $att['category'] ?? 'etudiant';
-$isStag   = in_array($category, ['stagiaire_externe','stagiaire_academique','stagiaire_professionnel'], true);
 
 // ── 2. Données ───────────────────────────────────────────────
-if ($isStag) {
-    $nom        = strtoupper(trim(($att['stag_nom']??'').' '.($att['stag_prenom']??'')));
-    if (!$nom)   $nom = strtoupper($att['name'] ?? 'INCONNU');
-    $specialty  = $att['stag_specialty'] ?? ($att['specialty']  ?? '');
-    $startDate  = $att['stag_start']     ?? ($att['start_date'] ?? null);
-    $endDate    = $att['stag_end']       ?? ($att['end_date']   ?? null);
-    $birthDate  = $att['date_birth']     ?? null;
-    $birthPlace = $att['place_birth']    ?? '..........';
-} else {
-    $nom        = strtoupper(trim(($att['apprenant_nom']??'').' '.($att['apprenant_prenom']??'')));
-    if (!$nom)   $nom = strtoupper($att['name'] ?? 'INCONNU');
-    $specialty  = $att['specialty']     ?? '';
-    $startDate  = $att['start_date']    ?? null;
-    $endDate    = $att['end_date']      ?? null;
-    $birthDate  = $att['apprenant_ddn'] ?? ($att['date_birth'] ?? null);
-    $birthPlace = $att['apprenant_ldn'] ?? ($att['place_birth'] ?? '..........');
-}
+// On utilise l'instantané enregistré dans `attestation` au moment de la
+// création (cf. create.php) : c'est la source affichée dans la liste, et
+// elle reste stable même si la fiche apprenant/stagiaire liée évolue.
+$nom        = strtoupper(trim($att['name'] ?? ''));
+if (!$nom)   $nom = 'INCONNU';
+$specialty  = $att['specialty']   ?? '';
+$startDate  = $att['start_date']  ?? null;
+$endDate    = $att['end_date']    ?? null;
+$birthDate  = $att['date_birth']  ?? null;
+$birthPlace = $att['place_birth'] ?? '..........';
 
 function fmtD($v): string {
     $v = trim((string)$v);

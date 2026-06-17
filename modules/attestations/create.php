@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $db->prepare(
                     "INSERT INTO attestation_meta (attestation_id, category, apprenant_id, stagiaire_externe_id, created_at)
-                     VALUES (?, 'formation_ifp3ia', ?, NULL, NOW())"
+                     VALUES (?, 'etudiant', ?, NULL, NOW())"
                 )->execute([$attestation_id, $apprenant_id]);
 
                 setFlash('success', 'Attestation créée avec succès pour ' . htmlspecialchars($name) . ' !');
@@ -99,7 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stagiaire_id = isset($_POST['stagiaire_externe_id']) && $_POST['stagiaire_externe_id'] !== ''
                         ? (int)$_POST['stagiaire_externe_id'] : null;
-                        $category = $_POST['sirtech_type'] ?? 'stage_sirtech';
+        // L'onglet "Stagiaires Sir-Tech" de la liste filtre sur cette catégorie.
+        $category = 'stagiaire_externe';
 
         if (!$stagiaire_id) $errors[] = "Veuillez sélectionner un stagiaire Sir-Tech dans la liste.";
 

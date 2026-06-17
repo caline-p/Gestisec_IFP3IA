@@ -126,7 +126,7 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         .cert-title { text-align:center; font-size:26pt; font-weight:bold; text-transform:uppercase;
                       letter-spacing:1pt; border-top:2px solid #1a2e6b; border-bottom:2px solid #1a2e6b;
                       padding:3mm 0; margin:2mm 0 5mm; }
-        .cert-body { font-size:12pt; line-height:2.0; }
+        .cert-body { font-size:14pt; line-height:1.9; }
         .qr { width:20mm; height:auto; }
         .phone-line { font-size:10pt; font-weight:bold; }
         ";
@@ -174,10 +174,10 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         $css = $cssBase . "
         .logo-head { text-align:center; margin-bottom:2mm; }
         .logo-head img { width:40mm; height:auto; vertical-align:middle; margin-right:6mm; }
-        .ets-name { display:inline-block; vertical-align:middle; font-size:30pt; font-weight:bold; letter-spacing:1pt; }
+        .ets-name { display:inline-block; vertical-align:middle; font-size:38pt; font-weight:bold; letter-spacing:1pt; }
         .rccm { text-align:center; font-size:9pt; font-weight:bold; margin:1mm 0; }
         .cert-title { text-align:center; font-size:22pt; font-weight:bold; text-decoration:underline; margin:3mm 0 5mm; }
-        .cert-body { font-size:12pt; line-height:2.0; font-style:italic; }
+        .cert-body { font-size:14pt; line-height:1.9; font-style:italic; }
         .spec { font-size:13pt; font-weight:bold; }
         .contact-line { font-size:9.5pt; font-weight:bold; margin-bottom:2mm; }
         .website { font-size:9pt; font-weight:bold; text-align:center; }

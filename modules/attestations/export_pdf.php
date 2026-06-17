@@ -122,9 +122,9 @@ function buildAttestationHtml(string $category, array $d, array $img): string
         $watermark = 'IFP-3IA';
         $css = $cssBase . "
         .logo-head { text-align:center; margin-bottom:2mm; }
-        .logo-head img { width:34mm; height:auto; vertical-align:middle; margin-right:6mm; }
-        .inst-name { display:inline-block; vertical-align:middle; text-align:center;
-                     font-size:20pt; font-weight:bold; text-transform:uppercase; line-height:1.25; }
+        .logo-head img { width:30mm; height:auto; vertical-align:middle; margin-right:6mm; }
+        .inst-name { display:inline-block; vertical-align:middle; text-align:center; max-width:160mm;
+                     font-size:16pt; font-weight:bold; text-transform:uppercase; line-height:1.25; }
         .arrete { text-align:center; font-size:8pt; font-style:italic; font-weight:bold; margin:1.5mm 0 2mm; }
         .cert-title { text-align:center; font-size:26pt; font-weight:bold; text-transform:uppercase;
                       letter-spacing:1pt; border-top:2px solid #1a2e6b; border-bottom:2px solid #1a2e6b;

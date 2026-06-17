@@ -1,7 +1,10 @@
 <?php
 /**
- * export_pdf.php — Génération PDF avec DomPDF
- * GestiSec IFP-3IA — 3 types d'attestations
+ * export_pdf.php — Génération PDF des attestations (DomPDF)
+ * GestiSec IFP-3IA — 3 modèles calqués sur le dossier /templates :
+ *   - etudiant            -> IFP-3IA  : Attestation de fin de formation
+ *   - stagiaire_externe   -> SIR-TECH : Attestation de fin de formation
+ *   - (autre stagiaire)   -> SIR-TECH : Attestation de fin de stage
  */
 
 require_once __DIR__ . '/../../config/database.php';
@@ -19,28 +22,9 @@ if (!$id) { http_response_code(404); exit('Attestation introuvable.'); }
 
 // ── 1. Récupération ──────────────────────────────────────────
 $stmt = $db->prepare(
-    "SELECT att.*,
-            am.category,
-            am.apprenant_id,
-            am.stagiaire_externe_id,
-            ap.matricule       AS apprenant_matricule,
-            ap.nom             AS apprenant_nom,
-            ap.prenom          AS apprenant_prenom,
-            ap.date_naissance  AS apprenant_ddn,
-            ap.lieu_naissance  AS apprenant_ldn,
-            f.nom              AS filiere_nom,
-            se.nom             AS stag_nom,
-            se.prenom          AS stag_prenom,
-            se.etablissement   AS stag_etablissement,
-            se.specialty       AS stag_specialty,
-            se.start_date      AS stag_start,
-            se.end_date        AS stag_end,
-            se.type            AS stagiaire_type
+    "SELECT att.*, am.category
      FROM attestation att
      LEFT JOIN attestation_meta am ON am.attestation_id = att.id
-     LEFT JOIN apprenants ap       ON ap.id = am.apprenant_id
-     LEFT JOIN filieres f          ON f.id  = ap.filiere_id
-     LEFT JOIN stagiaires_externes se ON se.id = am.stagiaire_externe_id
      WHERE att.id = ?"
 );
 $stmt->execute([$id]);
@@ -48,26 +32,18 @@ $att = $stmt->fetch();
 if (!$att) { http_response_code(404); exit('Attestation introuvable (id='.$id.').'); }
 
 $category = $att['category'] ?? 'etudiant';
-$isStag   = in_array($category, ['stagiaire_externe','stagiaire_academique','stagiaire_professionnel'], true);
 
 // ── 2. Données ───────────────────────────────────────────────
-if ($isStag) {
-    $nom        = strtoupper(trim(($att['stag_nom']??'').' '.($att['stag_prenom']??'')));
-    if (!$nom)   $nom = strtoupper($att['name'] ?? 'INCONNU');
-    $specialty  = $att['stag_specialty'] ?? ($att['specialty']  ?? '');
-    $startDate  = $att['stag_start']     ?? ($att['start_date'] ?? null);
-    $endDate    = $att['stag_end']       ?? ($att['end_date']   ?? null);
-    $birthDate  = $att['date_birth']     ?? null;
-    $birthPlace = $att['place_birth']    ?? '..........';
-} else {
-    $nom        = strtoupper(trim(($att['apprenant_nom']??'').' '.($att['apprenant_prenom']??'')));
-    if (!$nom)   $nom = strtoupper($att['name'] ?? 'INCONNU');
-    $specialty  = $att['specialty']     ?? '';
-    $startDate  = $att['start_date']    ?? null;
-    $endDate    = $att['end_date']      ?? null;
-    $birthDate  = $att['apprenant_ddn'] ?? ($att['date_birth'] ?? null);
-    $birthPlace = $att['apprenant_ldn'] ?? ($att['place_birth'] ?? '..........');
-}
+// On utilise l'instantané enregistré dans `attestation` au moment de la
+// création (cf. create.php) : c'est la source affichée dans la liste, et
+// elle reste stable même si la fiche apprenant/stagiaire liée évolue.
+$nom        = strtoupper(trim($att['name'] ?? ''));
+if (!$nom)   $nom = 'INCONNU';
+$specialty  = $att['specialty']   ?? '';
+$startDate  = $att['start_date']  ?? null;
+$endDate    = $att['end_date']    ?? null;
+$birthDate  = $att['date_birth']  ?? null;
+$birthPlace = $att['place_birth'] ?? '..........';
 
 function fmtD($v): string {
     $v = trim((string)$v);
@@ -77,13 +53,19 @@ function fmtD($v): string {
     return $ts ? date('d/m/Y', $ts) : $v;
 }
 
-$dNais     = fmtD($birthDate);
-$dDebut    = fmtD($startDate);
-$dFin      = fmtD($endDate);
-$dateDeliv = date('d/m/Y');
+$data = [
+    'nom'        => $nom,
+    'dNais'      => fmtD($birthDate),
+    'birthPlace' => $birthPlace ?: '..........',
+    'dDebut'     => fmtD($startDate),
+    'dFin'       => fmtD($endDate),
+    'specialty'  => $specialty,
+];
 
-// ── 3. Images base64 ─────────────────────────────────────────
-$a = realpath(__DIR__ . '/../../assets') . '/';
+// ── 3. Images (encodées en base64 pour DomPDF) ───────────────
+// NB : les noms de fichiers dans /assets sont historiques et ne
+// correspondent pas toujours à leur contenu réel (corrigé ici).
+$assets = realpath(__DIR__ . '/../../assets') . '/';
 
 function b64img(string $path, string $mime = 'image/png'): string {
     return file_exists($path)
@@ -91,341 +73,171 @@ function b64img(string $path, string $mime = 'image/png'): string {
         : '';
 }
 
-$imgBorderTop    = b64img($a . 'cert_border_top.png');
-$imgBorderSide   = b64img($a . 'cert_border_side.png');
-$imgLogoIFP      = b64img($a . 'cert_logo_ifp.png');
-$imgLogoSIR      = b64img($a . 'cert_logo_sir.png');
-$imgPhoneIcon    = b64img($a . 'cert_phone_icon.png');
-$imgLocationIcon = b64img($a . 'cert_location_icon.png');
+$img = [
+    'frame'   => b64img($assets . 'cert_frame.png'),       // cadre ornemental (4 coins)
+    'logoIFP' => b64img($assets . 'cert_border_top.png'),  // logo 3iA
+    'logoSIR' => b64img($assets . 'cert_logo_sir.png'),    // logo SIR-TECH
+    'phone'   => b64img($assets . 'cert_logo.png'),        // icône téléphone
+    'loc'     => b64img($assets . 'cert_location_icon.png'), // icône localisation
+    'qr'      => b64img($assets . 'cert_phone.png'),       // QR code
+];
 
-// ── 4. CSS commun ─────────────────────────────────────────────
-$cssBase = "
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: Georgia, serif;
-    font-size: 12pt;
-    color: #1a2e6b;
-    background: #fff;
-    width: 270mm;
-}
-.page {
-    width: 270mm;
-    min-height: 185mm;
-    position: relative;
-}
-.border-top {
-    width: 270mm;
-    height: auto;
-    display: block;
-}
-.border-bottom {
-    width: 270mm;
-    height: auto;
-    display: block;
-    -dompdf-image-scale-factor: 1;
-    transform: scaleY(-1);
-}
-.content-wrap {
-    margin: 0 15mm;
-    padding: 3mm 6mm;
-}
-.sep {
-    border: none;
-    border-top: 2px solid #1a2e6b;
-    margin: 2mm 0;
-}
-";
-
-// ════════════════════════════════════════════════════════════
-// TEMPLATE 1 — IFP-3IA : Attestation de fin de formation
-// ════════════════════════════════════════════════════════════
-if ($category === 'etudiant') {
-
-    $prefix = 'ATTEST_FORMATION_IFP';
-
-    $html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>
-    <style>
-    $cssBase
-    .header-table { width:100%; border-collapse:collapse; margin-bottom:2mm; }
+// ── 4. Construction du HTML calqué sur /templates ────────────
+/**
+ * Renvoie le HTML complet d'une attestation selon sa catégorie.
+ */
+function buildAttestationHtml(string $category, array $d, array $img): string
+{
+    // -- CSS commun aux 3 modèles -----------------------------
+    $cssBase = "
+    * { margin:0; padding:0; box-sizing:border-box; }
+    @page { margin:0; }
+    body { font-family: Georgia, serif; color:#1a2e6b; }
+    .page { position:relative; width:297mm; height:210mm; overflow:hidden; }
+    .frame { position:absolute; top:0; left:0; width:297mm; height:210mm; }
+    .watermark { position:absolute; top:55mm; left:0; width:297mm; text-align:center;
+                 font-size:80pt; font-weight:bold; color:#1a2e6b; opacity:0.06;
+                 letter-spacing:4pt; transform:rotate(-20deg); }
+    .content { position:absolute; top:24mm; left:32mm; width:233mm; }
+    .header-table { width:100%; border-collapse:collapse; }
     .header-table td { vertical-align:middle; }
-    .logo-cell { width:22mm; text-align:center; }
-    .logo-cell img { width:18mm; height:auto; }
-    .inst-cell { padding-left:4mm; }
-    .inst-name {
-        font-size: 15pt; font-weight: bold;
-        color: #1a2e6b; text-transform: uppercase;
-        line-height: 1.3;
-    }
-    .arrete {
-        text-align: center; font-size: 8pt;
-        font-style: italic; font-weight: bold;
-        color: #1a2e6b; margin: 1.5mm 0 2mm;
-    }
-    .cert-title {
-        text-align: center; font-size: 19pt;
-        font-weight: bold; color: #1a2e6b;
-        text-transform: uppercase; letter-spacing: 1pt;
-        border-top: 2px solid #1a2e6b;
-        border-bottom: 2px solid #1a2e6b;
-        padding: 3mm 0; margin: 2mm 0 4mm;
-    }
-    .cert-body {
-        font-size: 12pt; line-height: 2.2;
-        text-align: center; color: #1a2e6b;
-    }
-    .footer-table { width:100%; border-collapse:collapse; margin-top:6mm; }
+    .sep { border:none; border-top:2px solid #1a2e6b; margin:2mm 0; }
+    .cert-body { text-align:center; color:#1a2e6b; }
+    .footer-table { width:100%; border-collapse:collapse; }
     .footer-table td { vertical-align:bottom; }
-    .phone-wrap { font-size:10pt; font-weight:bold; color:#1a2e6b; }
-    .phone-wrap img { width:6mm; height:auto; vertical-align:middle; margin-right:3px; }
-    .fait { font-size:11pt; color:#1a2e6b; margin-bottom:10mm; }
-    .sig {
-        font-size: 13pt; font-style: italic;
-        color: #1a2e6b; display: inline-block;
-        border-top: 1px solid #1a2e6b;
-        padding-top: 1.5mm; min-width: 38mm;
-        text-align: center;
-    }
-    </style></head><body>
-    <div class='page'>
-      <img class='border-top' src='$imgBorderTop'>
-      <div class='content-wrap'>
+    .fait { font-size:11pt; margin-bottom:11mm; }
+    .sig { font-size:13pt; font-style:italic; display:inline-block;
+           border-top:1px solid #1a2e6b; padding-top:1.5mm; min-width:42mm; text-align:center; }
+    .ico { width:6mm; height:auto; vertical-align:middle; margin-right:3px; }
+    ";
 
+    $nom = $d['nom']; $dNais = $d['dNais']; $birthPlace = $d['birthPlace'];
+    $dDebut = $d['dDebut']; $dFin = $d['dFin']; $specialty = $d['specialty'];
+
+    // ── Modèle 1 — IFP-3IA : fin de formation ────────────────
+    if ($category === 'etudiant') {
+        $watermark = 'IFP-3IA';
+        $css = $cssBase . "
+        .logo-cell { width:26mm; text-align:center; }
+        .logo-cell img { width:22mm; height:auto; }
+        .inst-name { font-size:15pt; font-weight:bold; text-transform:uppercase;
+                     line-height:1.3; padding-left:5mm; }
+        .arrete { text-align:center; font-size:8pt; font-style:italic; font-weight:bold; margin:1.5mm 0 2mm; }
+        .cert-title { text-align:center; font-size:20pt; font-weight:bold; text-transform:uppercase;
+                      letter-spacing:1pt; border-top:2px solid #1a2e6b; border-bottom:2px solid #1a2e6b;
+                      padding:3mm 0; margin:2mm 0 5mm; }
+        .cert-body { font-size:12pt; line-height:2.0; }
+        .qr { width:20mm; height:auto; }
+        .phone-line { font-size:10pt; font-weight:bold; }
+        ";
+        $body = "
         <table class='header-table'>
           <tr>
-            <td class='logo-cell'><img src='$imgLogoIFP' alt='Logo'></td>
-            <td class='inst-cell'>
-              <div class='inst-name'>INSTUTUT DE FORMATION PROFESSIONNEL<br>EN INGENIERIE INFORMATIQUE APPLIQUEE</div>
-            </td>
+            <td class='logo-cell'><img src='{$img['logoIFP']}' alt='Logo'></td>
+            <td><div class='inst-name'>INSTUTUT DE FORMATION PROFESSIONNEL<br>EN INGENIERIE INFORMATIQUE APPLIQUEE</div></td>
           </tr>
         </table>
-
         <hr class='sep'>
-        <div class='arrete'>ARRETE/ORDER N°000366/MINFOP/SG/DFOP/SDGSF/CSACD/CSACD/CBAC du/of 10 juin 2025</div>
-
+        <div class='arrete'>ARRETE/ORDER N&deg;000366/MINFOP/SG/DFOP/SDGSF/CSACD/CSACD/CBAC du/of 10 juin 2025</div>
         <div class='cert-title'>ATTESTATION DE FIN DE FORMATION</div>
-
         <div class='cert-body'>
-          Nous soussignons, IFP-3IA, certifions par la présente que <b>$nom</b>, né le<br>
-          <b>$dNais</b> à <b>$birthPlace</b>, a suivie régulièrement une<br>
-          formation professionnelle au sein de notre institut du <b>$dDebut</b> au<br>
-          <b>$dFin</b> en <b>$specialty</b>. L'intéressé a achevé la formation et à composer un<br>
-          examen de Certificat de Qualification Professionnel (CQP) dont les résultats<br>
-          sont en attente de publication.
+          Nous soussignons, IFP-3IA, certifions par la pr&eacute;sente que <b>$nom</b>, n&eacute; le
+          <b>$dNais</b> &agrave; <b>$birthPlace</b>, a suivie r&eacute;guli&egrave;rement une formation
+          professionnelle au sein de notre institut du <b>$dDebut</b> au <b>$dFin</b> en <b>$specialty</b>.
+          L'int&eacute;ress&eacute; a achev&eacute; la formation et &agrave; composer un examen de Certificat
+          de Qualification Professionnel (CQP) dont les r&eacute;sultats sont en attente de publication.
         </div>
-
-        <table class='footer-table'>
+        <div class='cert-body' style='margin-top:3mm;'>
+          En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
+        </div>
+        <table class='footer-table' style='margin-top:8mm;'>
           <tr>
-            <td style='width:50%'>
-              <div class='phone-wrap'>
-                <img src='$imgPhoneIcon' alt='Tel'> 699159058 / 6 52430272
-              </div>
+            <td style='width:40%'>
+              <div class='phone-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
             </td>
-            <td style='width:50%; text-align:right;'>
-              <div class='fait'>Fait à Dschang, le _______________</div>
+            <td style='width:24%; text-align:center;'><img class='qr' src='{$img['qr']}' alt='QR'></td>
+            <td style='width:36%; text-align:right;'>
+              <div class='fait'>Fait &agrave; Dschang, le _______________</div>
               <div class='sig'>Signature</div>
             </td>
           </tr>
-        </table>
+        </table>";
 
-      </div>
-      <img class='border-bottom' src='$imgBorderTop'>
-    </div>
-    </body></html>";
-
-// ════════════════════════════════════════════════════════════
-// TEMPLATE 2 — SIR-TECH : Attestation fin de formation externe
-// ════════════════════════════════════════════════════════════
-} elseif ($category === 'stagiaire_externe') {
-
-    $prefix = 'ATTEST_FORMATION_SIRTECH';
-
-    $html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>
-    <style>
-    $cssBase
-    .header-table { width:100%; border-collapse:collapse; margin-bottom:1mm; }
-    .header-table td { vertical-align:middle; }
-    .logo-cell { width:28mm; text-align:center; }
-    .logo-cell img { width:24mm; height:auto; }
-    .ets-name {
-        font-size: 22pt; font-weight: bold;
-        color: #1a2e6b; letter-spacing: 1pt;
-    }
-    .rccm {
-        text-align:center; font-size:9pt;
-        font-weight:bold; color:#1a2e6b; margin:1mm 0;
-    }
-    .cert-title {
-        font-size: 17pt; font-weight: bold;
-        color: #1a2e6b; text-align: center;
-        text-decoration: underline;
-        margin: 2mm 0 4mm;
-    }
-    .cert-body {
-        font-size: 12pt; line-height: 2.1;
-        text-align: center; color: #1a2e6b;
-        font-style: italic;
-    }
-    .cert-body b { font-style: italic; }
-    .spec { font-size:13pt; font-weight:bold; }
-    .footer-table { width:100%; border-collapse:collapse; margin-top:5mm; }
-    .footer-table td { vertical-align:bottom; }
-    .contact-line { font-size:9.5pt; font-weight:bold; color:#1a2e6b; margin-bottom:2mm; }
-    .contact-line img { width:5mm; height:auto; vertical-align:middle; margin-right:3px; }
-    .website { font-size:9pt; font-weight:bold; color:#1a2e6b; text-align:center; margin-top:2mm; }
-    .fait { font-size:10.5pt; color:#1a2e6b; margin-bottom:10mm; }
-    .sig {
-        font-size:12pt; font-style:italic; color:#1a2e6b;
-        display:inline-block; border-top:1px solid #1a2e6b;
-        padding-top:1.5mm; min-width:35mm; text-align:center;
-    }
-    </style></head><body>
-    <div class='page'>
-      <img class='border-top' src='$imgBorderTop'>
-      <div class='content-wrap'>
-
+    // ── Modèles 2 & 3 — SIR-TECH : formation / stage ─────────
+    } else {
+        $watermark = 'SIR-TECH';
+        if ($category === 'stagiaire_externe') {
+            $titre  = 'Attestation De Fin De Formation';
+            $phrase = 'a effectu&eacute; une formation au sein de notre entreprise';
+        } else {
+            $titre  = 'Attestation De Fin De Stage';
+            $phrase = 'a effectu&eacute; un stage acad&eacute;mique au sein de notre entreprise';
+        }
+        $css = $cssBase . "
+        .logo-cell { width:32mm; text-align:center; }
+        .logo-cell img { width:28mm; height:auto; }
+        .ets-name { font-size:22pt; font-weight:bold; letter-spacing:1pt; padding-left:5mm; }
+        .rccm { text-align:center; font-size:9pt; font-weight:bold; margin:1mm 0; }
+        .cert-title { text-align:center; font-size:17pt; font-weight:bold; text-decoration:underline; margin:3mm 0 5mm; }
+        .cert-body { font-size:12pt; line-height:2.0; font-style:italic; }
+        .spec { font-size:13pt; font-weight:bold; }
+        .contact-line { font-size:9.5pt; font-weight:bold; margin-bottom:2mm; }
+        .website { font-size:9pt; font-weight:bold; text-align:center; }
+        ";
+        $body = "
         <table class='header-table'>
           <tr>
-            <td class='logo-cell'><img src='$imgLogoSIR' alt='Logo SIR'></td>
-            <td style='padding-left:4mm;'>
-              <div class='ets-name'>ETS SIR-TECH</div>
-            </td>
+            <td class='logo-cell'><img src='{$img['logoSIR']}' alt='Logo SIR'></td>
+            <td><div class='ets-name'>ETS SIR-TECH</div></td>
           </tr>
         </table>
         <div class='rccm'>RCCM: RC/Dschang/2021/A/05</div>
         <hr class='sep'>
-
-        <div class='cert-title'>Attestation De Fin De Formation</div>
-
+        <div class='cert-title'>$titre</div>
         <div class='cert-body'>
-          Nous soussignons, ETS SIR-TECH, certifions par la présente que<br>
-          <b>$nom</b>, né le <b>$dNais</b> à <b>$birthPlace</b>,<br>
-          a effectué une formation au sein de notre entreprise<br>
-          du <b>$dDebut</b> au <b>$dFin</b> en<br>
+          Nous soussignons, ETS SIR-TECH, certifions par la pr&eacute;sente que <b>$nom</b>, n&eacute; le
+          <b>$dNais</b> &agrave; <b>$birthPlace</b>, $phrase du <b>$dDebut</b> au <b>$dFin</b> en
           <span class='spec'>$specialty</span>
         </div>
-        <div class='cert-body' style='margin-top:3mm;'>
-          En foi de quoi, le présent document lui est délivré pour servir et valoir
+        <div class='cert-body' style='font-style:normal; margin-top:3mm;'>
+          En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
         </div>
-
-        <table class='footer-table'>
+        <table class='footer-table' style='margin-top:8mm;'>
           <tr>
-            <td style='width:45%'>
-              <div class='contact-line'><img src='$imgPhoneIcon' alt='Tel'> 699159058 / 6 52430272</div>
-              <div class='contact-line'><img src='$imgLocationIcon' alt='Loc'> DSCHANG, MARCHE FOTO</div>
+            <td style='width:42%'>
+              <div class='contact-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
+              <div class='contact-line'><img class='ico' src='{$img['loc']}' alt='Loc'> DSCHANG, MARCHE FOTO</div>
             </td>
-            <td style='width:20%; text-align:center;'>
-              <div class='website'>WWW.SIR-TECH.ORG</div>
-            </td>
-            <td style='width:35%; text-align:right;'>
-              <div class='fait'>Fait à Dschang, le _______________</div>
+            <td style='width:22%; text-align:center;'><div class='website'>WWW.SIR-TECH.ORG</div></td>
+            <td style='width:36%; text-align:right;'>
+              <div class='fait'>Fait &agrave; Dschang, le _______________</div>
               <div class='sig'>Signature</div>
             </td>
           </tr>
-        </table>
+        </table>";
+    }
 
+    return "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>$css</style></head><body>
+      <div class='page'>
+        <img class='frame' src='{$img['frame']}'>
+        <div class='watermark'>$watermark</div>
+        <div class='content'>$body</div>
       </div>
-      <img class='border-bottom' src='$imgBorderTop'>
-    </div>
-    </body></html>";
-
-// ════════════════════════════════════════════════════════════
-// TEMPLATE 3 — SIR-TECH : Attestation fin de stage
-// ════════════════════════════════════════════════════════════
-} else {
-
-    $prefix = 'ATTEST_STAGE_SIRTECH';
-
-    $html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>
-    <style>
-    $cssBase
-    .header-table { width:100%; border-collapse:collapse; margin-bottom:1mm; }
-    .header-table td { vertical-align:middle; }
-    .logo-cell { width:28mm; text-align:center; }
-    .logo-cell img { width:24mm; height:auto; }
-    .ets-name {
-        font-size: 22pt; font-weight: bold;
-        color: #1a2e6b; letter-spacing: 1pt;
-    }
-    .rccm {
-        text-align:center; font-size:9pt;
-        font-weight:bold; color:#1a2e6b; margin:1mm 0;
-    }
-    .cert-title {
-        font-size: 17pt; font-weight: bold;
-        color: #1a2e6b; text-align: center;
-        text-decoration: underline;
-        margin: 2mm 0 4mm;
-    }
-    .cert-body {
-        font-size: 12pt; line-height: 2.1;
-        text-align: center; color: #1a2e6b;
-        font-style: italic;
-    }
-    .cert-body b { font-style: italic; }
-    .spec { font-size:13pt; font-weight:bold; }
-    .footer-table { width:100%; border-collapse:collapse; margin-top:5mm; }
-    .footer-table td { vertical-align:bottom; }
-    .contact-line { font-size:9.5pt; font-weight:bold; color:#1a2e6b; margin-bottom:2mm; }
-    .contact-line img { width:5mm; height:auto; vertical-align:middle; margin-right:3px; }
-    .website { font-size:9pt; font-weight:bold; color:#1a2e6b; text-align:center; margin-top:2mm; }
-    .fait { font-size:10.5pt; color:#1a2e6b; margin-bottom:10mm; }
-    .sig {
-        font-size:12pt; color:#1a2e6b;
-        display:inline-block; border-top:1px solid #1a2e6b;
-        padding-top:1.5mm; min-width:35mm; text-align:center;
-    }
-    </style></head><body>
-    <div class='page'>
-      <img class='border-top' src='$imgBorderTop'>
-      <div class='content-wrap'>
-
-        <table class='header-table'>
-          <tr>
-            <td class='logo-cell'><img src='$imgLogoSIR' alt='Logo SIR'></td>
-            <td style='padding-left:4mm;'>
-              <div class='ets-name'>ETS SIR-TECH</div>
-            </td>
-          </tr>
-        </table>
-        <div class='rccm'>RCCM: RC/Dschang/2021/A/05</div>
-        <hr class='sep'>
-
-        <div class='cert-title'>Attestation De Fin De Stage</div>
-
-        <div class='cert-body'>
-          Nous soussignons, ETS SIR-TECH, certifions par la présente que<br>
-          <b>$nom</b>, né le <b>$dNais</b> à <b>$birthPlace</b>,<br>
-          a effectué un stage académique au sein de notre entreprise<br>
-          du <b>$dDebut</b> au <b>$dFin</b> en<br>
-          <span class='spec'>$specialty</span>
-        </div>
-        <div class='cert-body' style='margin-top:3mm;'>
-          En foi de quoi, le présent document lui est délivré pour servir et valoir
-        </div>
-
-        <table class='footer-table'>
-          <tr>
-            <td style='width:45%'>
-              <div class='contact-line'><img src='$imgPhoneIcon' alt='Tel'> 699159058 / 6 52430272</div>
-              <div class='contact-line'><img src='$imgLocationIcon' alt='Loc'> DSCHANG, MARCHE FOTO</div>
-            </td>
-            <td style='width:20%; text-align:center;'>
-              <div class='website'>WWW.SIR-TECH.ORG</div>
-            </td>
-            <td style='width:35%; text-align:right;'>
-              <div class='fait'>Fait à Dschang, le _______________</div>
-              <div class='sig'>Signature</div>
-            </td>
-          </tr>
-        </table>
-
-      </div>
-      <img class='border-bottom' src='$imgBorderTop'>
-    </div>
     </body></html>";
 }
 
-// ── 5. Génération avec DomPDF ────────────────────────────────
+// ── 5. Préfixe du fichier selon le modèle ────────────────────
+if ($category === 'etudiant') {
+    $prefix = 'ATTEST_FORMATION_IFP';
+} elseif ($category === 'stagiaire_externe') {
+    $prefix = 'ATTEST_FORMATION_SIRTECH';
+} else {
+    $prefix = 'ATTEST_STAGE_SIRTECH';
+}
+
+// ── 6. Génération avec DomPDF ────────────────────────────────
+$html = buildAttestationHtml($category, $data, $img);
+
 $options = new Options();
 $options->set('isHtml5ParserEnabled', true);
 $options->set('isRemoteEnabled', true);

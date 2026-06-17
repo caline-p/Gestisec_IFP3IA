@@ -98,7 +98,8 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     .watermark { position:absolute; top:55mm; left:0; width:297mm; text-align:center;
                  font-size:80pt; font-weight:bold; color:#1a2e6b; opacity:0.06;
                  letter-spacing:4pt; transform:rotate(-20deg); }
-    .content { position:absolute; top:24mm; left:32mm; width:233mm; }
+    .vbox { position:absolute; top:14mm; left:32mm; width:233mm; height:182mm; border-collapse:collapse; }
+    .vcell { height:182mm; vertical-align:middle; }
     .header-table { width:100%; border-collapse:collapse; }
     .header-table td { vertical-align:middle; }
     .sep { border:none; border-top:2px solid #1a2e6b; margin:2mm 0; }
@@ -118,25 +119,23 @@ function buildAttestationHtml(string $category, array $d, array $img): string
     if ($category === 'etudiant') {
         $watermark = 'IFP-3IA';
         $css = $cssBase . "
-        .logo-cell { width:26mm; text-align:center; }
-        .logo-cell img { width:22mm; height:auto; }
-        .inst-name { font-size:15pt; font-weight:bold; text-transform:uppercase;
-                     line-height:1.3; padding-left:5mm; }
+        .logo-head { text-align:center; margin-bottom:2mm; }
+        .logo-head img { width:34mm; height:auto; vertical-align:middle; margin-right:6mm; }
+        .inst-name { display:inline-block; vertical-align:middle; text-align:center;
+                     font-size:20pt; font-weight:bold; text-transform:uppercase; line-height:1.25; }
         .arrete { text-align:center; font-size:8pt; font-style:italic; font-weight:bold; margin:1.5mm 0 2mm; }
-        .cert-title { text-align:center; font-size:20pt; font-weight:bold; text-transform:uppercase;
+        .cert-title { text-align:center; font-size:26pt; font-weight:bold; text-transform:uppercase;
                       letter-spacing:1pt; border-top:2px solid #1a2e6b; border-bottom:2px solid #1a2e6b;
                       padding:3mm 0; margin:2mm 0 5mm; }
-        .cert-body { font-size:12pt; line-height:2.0; }
+        .cert-body { font-size:14pt; line-height:1.9; }
         .qr { width:20mm; height:auto; }
         .phone-line { font-size:10pt; font-weight:bold; }
         ";
         $body = "
-        <table class='header-table'>
-          <tr>
-            <td class='logo-cell'><img src='{$img['logoIFP']}' alt='Logo'></td>
-            <td><div class='inst-name'>INSTUTUT DE FORMATION PROFESSIONNEL<br>EN INGENIERIE INFORMATIQUE APPLIQUEE</div></td>
-          </tr>
-        </table>
+        <div class='logo-head'>
+          <img src='{$img['logoIFP']}' alt='Logo'>
+          <span class='inst-name'>INSTUTUT DE FORMATION PROFESSIONNEL<br>EN INGENIERIE INFORMATIQUE APPLIQUEE</span>
+        </div>
         <hr class='sep'>
         <div class='arrete'>ARRETE/ORDER N&deg;000366/MINFOP/SG/DFOP/SDGSF/CSACD/CSACD/CBAC du/of 10 juin 2025</div>
         <div class='cert-title'>ATTESTATION DE FIN DE FORMATION</div>
@@ -147,10 +146,11 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           L'int&eacute;ress&eacute; a achev&eacute; la formation et &agrave; composer un examen de Certificat
           de Qualification Professionnel (CQP) dont les r&eacute;sultats sont en attente de publication.
         </div>
-        <div class='cert-body' style='margin-top:3mm;'>
+        <div class='cert-body' style='margin-top:5mm;'>
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
-        </div>
-        <table class='footer-table' style='margin-top:8mm;'>
+        </div>";
+        $footer = "
+        <table class='footer-table'>
           <tr>
             <td style='width:40%'>
               <div class='phone-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
@@ -174,23 +174,21 @@ function buildAttestationHtml(string $category, array $d, array $img): string
             $phrase = 'a effectu&eacute; un stage acad&eacute;mique au sein de notre entreprise';
         }
         $css = $cssBase . "
-        .logo-cell { width:32mm; text-align:center; }
-        .logo-cell img { width:28mm; height:auto; }
-        .ets-name { font-size:22pt; font-weight:bold; letter-spacing:1pt; padding-left:5mm; }
+        .logo-head { text-align:center; margin-bottom:2mm; }
+        .logo-head img { width:40mm; height:auto; vertical-align:middle; margin-right:6mm; }
+        .ets-name { display:inline-block; vertical-align:middle; font-size:38pt; font-weight:bold; letter-spacing:1pt; }
         .rccm { text-align:center; font-size:9pt; font-weight:bold; margin:1mm 0; }
-        .cert-title { text-align:center; font-size:17pt; font-weight:bold; text-decoration:underline; margin:3mm 0 5mm; }
-        .cert-body { font-size:12pt; line-height:2.0; font-style:italic; }
+        .cert-title { text-align:center; font-size:22pt; font-weight:bold; text-decoration:underline; margin:3mm 0 5mm; }
+        .cert-body { font-size:14pt; line-height:1.9; font-style:italic; }
         .spec { font-size:13pt; font-weight:bold; }
         .contact-line { font-size:9.5pt; font-weight:bold; margin-bottom:2mm; }
         .website { font-size:9pt; font-weight:bold; text-align:center; }
         ";
         $body = "
-        <table class='header-table'>
-          <tr>
-            <td class='logo-cell'><img src='{$img['logoSIR']}' alt='Logo SIR'></td>
-            <td><div class='ets-name'>ETS SIR-TECH</div></td>
-          </tr>
-        </table>
+        <div class='logo-head'>
+          <img src='{$img['logoSIR']}' alt='Logo SIR'>
+          <span class='ets-name'>ETS SIR-TECH</span>
+        </div>
         <div class='rccm'>RCCM: RC/Dschang/2021/A/05</div>
         <hr class='sep'>
         <div class='cert-title'>$titre</div>
@@ -199,10 +197,11 @@ function buildAttestationHtml(string $category, array $d, array $img): string
           <b>$dNais</b> &agrave; <b>$birthPlace</b>, $phrase du <b>$dDebut</b> au <b>$dFin</b> en
           <span class='spec'>$specialty</span>
         </div>
-        <div class='cert-body' style='font-style:normal; margin-top:3mm;'>
+        <div class='cert-body' style='font-style:normal; margin-top:5mm;'>
           En foi de quoi, le pr&eacute;sent document lui est d&eacute;livr&eacute; pour servir et valoir ce que de droit.
-        </div>
-        <table class='footer-table' style='margin-top:8mm;'>
+        </div>";
+        $footer = "
+        <table class='footer-table'>
           <tr>
             <td style='width:42%'>
               <div class='contact-line'><img class='ico' src='{$img['phone']}' alt='Tel'> 699159058 / 6 52430272</div>
@@ -221,7 +220,7 @@ function buildAttestationHtml(string $category, array $d, array $img): string
       <div class='page'>
         <img class='frame' src='{$img['frame']}'>
         <div class='watermark'>$watermark</div>
-        <div class='content'>$body</div>
+        <table class='vbox'><tr><td class='vcell'>$body $footer</td></tr></table>
       </div>
     </body></html>";
 }
